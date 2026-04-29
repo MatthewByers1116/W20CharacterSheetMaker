@@ -1,0 +1,260 @@
+﻿@page "/advantages"
+@using W20Builder.Models
+@inject CharacterBuilderService BuilderService
+
+<PageTitle>W20 Builder - Advantages</PageTitle>
+
+<div class="character-panel">
+    <h2>Garou Advantages Protocol</h2>
+
+    <div class="advantage-grid">
+        <div class="section-box">
+            <h3>Backgrounds <span class="counter">[@character.BackgroundDotsSpent / 5]</span></h3>
+            <p class="instruction">Allocate 5 dots. Hover for descriptions.</p>
+            
+            @foreach (var bg in character.Backgrounds)
+            {
+                <div class="attr-row">
+                    <div class="tooltip-container">
+                        <span class="attr-label">@bg.Key</span>
+                        <span class="tooltip-text">@GetBackgroundDescription(bg.Key)</span>
+                    </div>
+                    <div class="dots">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int dotValue = i;
+                            <span class="dot @(character.Backgrounds[bg.Key] >= dotValue ? "filled" : "")" 
+                                  @onclick="() => SetBackground(bg.Key, dotValue)"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="section-box">
+            <h3>Initial Gifts Selection</h3>
+            <p class="instruction">Select one starting Gift from each category below.</p>
+
+            <div class="gift-selector">
+                <div class="selection-row">
+                    <label>Breed (@character.Breed):</label>
+                    <select @onchange="(e) => UpdateGift(0, e.Value.ToString())">
+                        <option value="">-- Select Breed Gift --</option>
+                        @foreach (var gift in GetBreedGifts())
+                        {
+                            <option value="@gift">@gift</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="selection-row">
+                    <label>Auspice (@character.Auspice):</label>
+                    <select @onchange="(e) => UpdateGift(1, e.Value.ToString())">
+                        <option value="">-- Select Auspice Gift --</option>
+                        @foreach (var gift in GetAuspiceGifts())
+                        {
+                            <option value="@gift">@gift</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="selection-row">
+                    <label>Tribe (@character.Tribe):</label>
+                    <select @onchange="(e) => UpdateGift(2, e.Value.ToString())">
+                        <option value="">-- Select Tribe Gift --</option>
+                        @foreach (var gift in GetTribeGifts())
+                        {
+                            <option value="@gift">@gift</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="selected-gifts-display scanline-bg">
+                <div class="lore-header">TACTICAL POWER READOUT:</div>
+                @if (!character.SelectedGifts.Any(g => !string.IsNullOrEmpty(g)))
+                {
+                    <p class="no-data">NO GIFTS SELECTED. AWAITING INPUT...</p>
+                }
+                else
+                {
+                    @foreach (var gift in character.SelectedGifts)
+                    {
+                        @if (!string.IsNullOrEmpty(gift))
+                        {
+                            <div class="gift-readout">
+                                <span class="gift-title">> @gift.ToUpper()</span>
+                                <p class="gift-system">@((MarkupString)GetGiftSystem(gift))</p>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private W20Character character => BuilderService.CurrentCharacter;
+
+    protected override void OnInitialized()
+    {
+        if (character.SelectedGifts.Count < 3)
+        {
+            character.SelectedGifts = new List<string> { "", "", "" };
+        }
+    }
+
+    private void SetBackground(string key, int value)
+    {
+        if (character.Backgrounds[key] == value) character.Backgrounds[key] = 0;
+        else character.Backgrounds[key] = value;
+    }
+
+    private void UpdateGift(int index, string giftName)
+    {
+        character.SelectedGifts[index] = giftName;
+    }
+
+    private string GetBackgroundDescription(string name) => name switch
+    {
+        "Allies" => "Human or wolf friends. 1 dot = 1 ally of moderate power.",
+        "Ancestors" => "Connection to past lives. Once per scene, roll to gain extra Ability dots.",
+        "Contacts" => "Information sources. 1 dot = 1 major or several minor contacts.",
+        "Fate" => "A destiny or prophecy. Provides protection or guidance.",
+        "Fetish" => "Spirit bound to an item. Dots represent the item's level/power.",
+        "Kinfolk" => "Family immune to Delirium. 1 dot = 2 useful relatives.",
+        "Mentor" => "An elder advisor. Provides training and political cover.",
+        "Pure Breed" => "Lineage pedigree. Grants bonus dice for Social rolls with Garou.",
+        "Resources" => "Wealth/Assets. 1 dot = working class; 5 dots = wealthy.",
+        "Rite" => "Dots equal the total levels of rites known.",
+        "Totem" => "Dots contribute to the pack's shared Totem pool.",
+        _ => "Description unavailable."
+    };
+
+    private string GetGiftSystem(string name) => name switch
+    {
+        // Breed Gifts
+        "Apecraft’s Blessings" => "<strong>System:</strong> Use tools/machines without needing to roll Dexterity or Skill. Any roll involving manual tools succeeds automatically.",
+        "City Running" => "<strong>System:</strong> Double movement speed on rooftops/pavement. All Dexterity + Athletics rolls for urban traversal are at -2 Difficulty.",
+        "Master of Fire" => "<strong>System:</strong> Spend 1 Willpower. For the scene, fire does Bashing damage instead of Aggravated. You may handle hot objects safely.",
+        "Persuasion" => "<strong>System:</strong> All Social rolls gain an automatic success. Words carry supernatural weight in Moots.",
+        "Smell of Man" => "<strong>System:</strong> Domestic animals flee; wild animals may attack. +2 dice to all Tracking rolls for humans.",
+        "Create Element" => "<strong>System:</strong> Spend 1 Gnosis. Create a small volume of fire, air, earth, or water within 10ft. Does not create weapons (like fireballs).",
+        "Curse of Hatred" => "<strong>System:</strong> Roll Manipulation + Expression (Diff: target Willpower). Each success removes 1 Willpower point from the victim.",
+        "Primal Anger" => "<strong>System:</strong> Spend 1 Rage. Instantly regain all used Rage points or force a shapeshift without a roll.",
+        "Rat Head" => "<strong>System:</strong> Spend 1 Gnosis. Your body becomes fluid; you can squeeze through any opening wider than your nose.",
+        "Hare's Leap" => "<strong>System:</strong> Roll Strength + Athletics. Double your horizontal/vertical jumping distance for each success.",
+        "Heightened Senses" => "<strong>System:</strong> Spend 1 Gnosis to activate for the scene. -2 Difficulty to all Perception rolls. In Crinos/Lupus, can track by scent.",
+        "Prey Mind" => "<strong>System:</strong> Roll Perception + Primal-Urge (Diff: target Wits + Stealth). Success allows you to predict the target's flight path.",
+
+        // Auspice Gifts
+        "Blur of the Milky Eye" => "<strong>System:</strong> Roll Wits + Stealth (Diff 6). Anyone trying to see you adds your successes to their Difficulty.",
+        "Open Seal" => "<strong>System:</strong> Roll Gnosis (Diff: variable, usually 6). Unlocks any physical or electronic lock instantly.",
+        "Scent of Running Water" => "<strong>System:</strong> Passive. All Tracking rolls made against you by scent increase in difficulty by +4.",
+        "Mother's Touch" => "<strong>System:</strong> Spend 1 Gnosis. Roll Intelligence + Medicine (Diff: target's Wound Penalty + 6). Each success heals 1 Level of Bashing/Lethal.",
+        "Spirit Snare" => "<strong>System:</strong> Roll Wits + Occult (Diff: Spirit's Gnosis). Spirit is entangled; cannot move and loses 2 dice on all pools.",
+        "Spirit Speech" => "<strong>System:</strong> Passive. You can hear and speak to spirits across the Gauntlet without needing a roll.",
+        "Fangs of Judgment" => "<strong>System:</strong> Spend 1 Willpower. For the scene, your bite/claw attacks do +2 damage against those with low Honor/Wisdom.",
+        "Truth of Gaia" => "<strong>System:</strong> Roll Perception + Empathy (Diff: target's Manipulation + Subterfuge). Success reveals if the target is lying.",
+        "Beast Speech" => "<strong>System:</strong> Roll Charisma + Animal Ken (Diff 6). You can communicate with and command one animal per success.",
+        "Call of the Wyld" => "<strong>System:</strong> Roll Stamina + Performance (Diff 6). Allies who hear the howl gain +1 die to all combat pools for the scene.",
+        "Falling Touch" => "<strong>System:</strong> Roll Dexterity + Brawl. Target is knocked down and must spend 1 Willpower or a turn to stand back up.",
+        "Inspiration" => "<strong>System:</strong> Spend 1 Gnosis. Allies within earshot gain 1 automatic success on their next roll.",
+        "Razor Claws" => "<strong>System:</strong> Spend 1 Rage. Sharpen claws on stone. For the scene, Claw attacks do +1 damage (Aggravated).",
+
+        // Tribe Gifts
+        "Breath of the Wyld" => "<strong>System:</strong> Roll Gnosis (Diff 6). Allies gain +1 to all dice pools for one turn per success.",
+        "Cooking" => "<strong>System:</strong> Spend 1 Gnosis. Transform trash, wood, or cardboard into a meal for one person per success. Removes toxins.",
+        "Faerie Light" => "<strong>System:</strong> Roll Wits + Expression (Diff 6). Create a light that can move up to 10 yards per turn. Blind enemies at -2 pool.",
+        "Lightning Reflexes" => "<strong>System:</strong> Spend 1 Willpower. You gain +2 to Initiative and may take one extra movement action this turn.",
+        "Control Simple Machine" => "<strong>System:</strong> Roll Manipulation + Technology (Diff 7). Command a lever, gear, or door to move as you wish.",
+        "Aura of Confidence" => "<strong>System:</strong> Passive. You are immune to Intimidation and any power that causes fear.",
+        "Sense Magic" => "<strong>System:</strong> Roll Perception + Enigmas (Diff 7). Detect the presence and type of magic within 50 feet.",
+        "Call the Breeze" => "<strong>System:</strong> Spend 1 Willpower. A wind knocks down anyone with Strength less than your successes.",
+        _ => "<strong>System:</strong> Data encrypted. Refer to Core Archive (PDF) for specific dice pools and difficulty modifiers."
+    };
+
+    private string[] GetBreedGifts() => character.Breed switch {
+        "Homid" => new[] { "Apecraft’s Blessings", "City Running", "Master of Fire", "Persuasion", "Smell of Man" },
+        "Metis" => new[] { "Create Element", "Curse of Hatred", "Primal Anger", "Rat Head", "Sense Wyrm" },
+        "Lupus" => new[] { "Hare's Leap", "Heightened Senses", "Prey Mind", "Predator's Arsenal", "Sense Prey" },
+        _ => Array.Empty<string>()
+    };
+
+    private string[] GetAuspiceGifts() => character.Auspice switch {
+        "Ragabash" => new[] { "Blur of the Milky Eye", "Open Seal", "Scent of Running Water", "Slipping the Shadow", "Taking the Forgotten" },
+        "Theurge" => new[] { "Mother's Touch", "Sense Wyrm", "Spirit Snare", "Spirit Speech", "Umbral Tether" },
+        "Philodox" => new[] { "Fangs of Judgment", "Persuasion", "Resist Pain", "Scent of the True Form", "Truth of Gaia" },
+        "Galliard" => new[] { "Beast Speech", "Call of the Wyld", "Distractions", "Mindspeak", "Perfect Recall" },
+        "Ahroun" => new[] { "Falling Touch", "Inspiration", "Pack Tactics", "Razor Claws", "Spur Claws" },
+        _ => Array.Empty<string>()
+    };
+
+    private string[] GetTribeGifts() => character.Tribe switch {
+        "Black Furies" => new[] { "Breath of the Wyld", "Man's Skin", "Heightened Senses", "Sense Wyrm", "Wyld Resurgence" },
+        "Bone Gnawers" => new[] { "Cooking", "Desperate Strength", "Resist Toxin", "Scent of Sweet Honey" },
+        "Children of Gaia" => new[] { "Brother’s Scent", "Jam Weapon", "Mercy", "Mother's Touch", "Resist Pain" },
+        "Fianna" => new[] { "Faerie Light", "Hare's Leap", "Persuasion", "Resist Toxin", "Two Tongues" },
+        "Get of Fenris" => new[] { "Lightning Reflexes", "Master of Fire", "Razor Claws", "Resist Pain", "Visage of Fenris" },
+        "Glass Walkers" => new[] { "Control Simple Machine", "Diagnostics", "Persuasion", "Plug and Play", "Trick Shot" },
+        "Red Talons" => new[] { "Beast Speech", "Eye of the Hunter", "Hidden Killer", "Scent of Running Water", "Wolf at the Door" },
+        "Shadow Lords" => new[] { "Aura of Confidence", "Fatal Flaw", "Seizing the Edge", "Shadow Weaving", "Whisper Catching" },
+        "Silent Striders" => new[] { "Heaven's Guidance", "Sense Wyrm", "Silence", "Speed of Thought", "Visions of Duat" },
+        "Silver Fangs" => new[] { "Eye of the Falcon", "Falcon's Grasp", "Inspiration", "Lambent Flame", "Sense Wyrm" },
+        "Stargazers" => new[] { "Balance", "Channeling", "Falling Touch", "Iron Resolve", "Sense Wyrm" },
+        "Uktena" => new[] { "Sense Magic", "Sense Wyrm", "Shroud", "Spirit of the Lizard", "Spirit Speech" },
+        "Wendigo" => new[] { "Beat of the Heart-Drum", "Call the Breeze", "Camouflage", "Ice Echo", "Resist Pain" },
+        _ => Array.Empty<string>()
+    };
+}
+
+<style>
+    .character-panel { background: #0a0a0a; padding: 20px; border: 1px solid #444; position: relative; }
+    .character-panel h2 { color: #ff3333; border-bottom: 2px dashed #8B0000; padding-bottom: 10px; text-transform: uppercase; }
+
+    .advantage-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; margin-top: 20px; }
+    
+    .section-box h3 { color: #8B0000; text-transform: uppercase; border-bottom: 1px solid #333; margin-bottom: 10px; }
+    .counter { color: #ff3333; float: right; font-family: monospace; }
+    .instruction { color: #888; font-size: 0.85rem; font-style: italic; margin-bottom: 15px; }
+
+    .attr-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 4px; border-bottom: 1px solid #1a1a1a; }
+    .attr-label { color: #d3d3d3; font-size: 0.95rem; cursor: help; border-bottom: 1px dotted #555; }
+
+    .gift-selector { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+    .selection-row { display: flex; flex-direction: column; }
+    .selection-row label { color: #888; font-size: 0.8rem; margin-bottom: 4px; }
+    
+    .gift-selector select { 
+        width: 100%; background: #000; color: #00ff00; border: 1px solid #333; padding: 10px; 
+        font-family: 'Courier New'; font-size: 1rem; cursor: pointer;
+    }
+
+    .selected-gifts-display { 
+        background: #050505; border: 1px solid #333; padding: 15px; min-height: 250px; 
+        box-shadow: inset 0 0 10px #000; overflow-y: auto;
+    }
+    .lore-header { color: #888; font-size: 0.8rem; margin-bottom: 15px; letter-spacing: 2px; border-bottom: 1px solid #222; }
+    
+    .no-data { color: #444; font-family: monospace; text-align: center; margin-top: 50px; }
+
+    .gift-readout { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a; }
+    .gift-title { color: #0098ff; font-family: monospace; font-size: 1rem; font-weight: bold; display: block; margin-bottom: 5px; }
+    .gift-system { color: #bbb; font-size: 0.85rem; line-height: 1.4; margin: 0; }
+    .gift-system strong { color: #ff3333; }
+
+    /* Tooltip styling */
+    .tooltip-container { position: relative; }
+    .tooltip-text {
+        visibility: hidden; width: 220px; background-color: #8B0000; color: #fff;
+        text-align: center; border: 1px solid #ff3333; padding: 10px; position: absolute;
+        z-index: 100; bottom: 125%; left: 0; opacity: 0; transition: opacity 0.3s;
+        font-size: 0.85rem; line-height: 1.3; box-shadow: 5px 5px 15px rgba(0,0,0,0.9);
+    }
+    .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+    .dots { display: flex; gap: 4px; }
+    .dot { width: 15px; height: 15px; border-radius: 50%; border: 1px solid #555; cursor: pointer; background-color: #000; }
+    .dot.filled { background-color: #ff3333; border-color: #8B0000; box-shadow: 0 0 5px rgba(255,51,51,0.5); }
+</style>

@@ -1,0 +1,190 @@
+﻿@page "/attributes"
+@using W20Builder.Models
+@inject CharacterBuilderService BuilderService
+
+<PageTitle>W20 Builder - Attributes</PageTitle>
+
+<div class="character-panel">
+    <h2>Attribute Allocation</h2>
+    
+    <div class="instruction-box">
+        <p>Prioritize your categories: <strong>Primary (7 dots)</strong>, <strong>Secondary (5 dots)</strong>, and <strong>Tertiary (3 dots)</strong>. Every Garou starts with 1 free dot in all Attributes.</p>
+    </div>
+
+    <div class="distribution-tracker">
+        <div class="tracker-box">Physical Spent: <strong>@character.PhysicalDotsSpent</strong></div>
+        <div class="tracker-box">Social Spent: <strong>@character.SocialDotsSpent</strong></div>
+        <div class="tracker-box">Mental Spent: <strong>@character.MentalDotsSpent</strong></div>
+    </div>
+
+    <div class="attribute-grid">
+        <div class="attribute-column">
+            <h3>Physical</h3>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Strength</span>
+                    <span class="attr-lore">Raw physical power and lifting capacity.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Strength >= dotValue ? "filled" : "")" @onclick="() => character.Strength = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Dexterity</span>
+                    <span class="attr-lore">Agility, speed, and hand-eye coordination.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Dexterity >= dotValue ? "filled" : "")" @onclick="() => character.Dexterity = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Stamina</span>
+                    <span class="attr-lore">Endurance, resilience, and damage soak.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Stamina >= dotValue ? "filled" : "")" @onclick="() => character.Stamina = dotValue"></span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="attribute-column">
+            <h3>Social</h3>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Charisma</span>
+                    <span class="attr-lore">Innate charm, presence, and leadership.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Charisma >= dotValue ? "filled" : "")" @onclick="() => character.Charisma = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Manipulation</span>
+                    <span class="attr-lore">Persuasion, trickery, and getting others to act.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Manipulation >= dotValue ? "filled" : "")" @onclick="() => character.Manipulation = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Appearance</span>
+                    <span class="attr-lore">Physical attractiveness and visual impression.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Appearance >= dotValue ? "filled" : "")" @onclick="() => character.Appearance = dotValue"></span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="attribute-column">
+            <h3>Mental</h3>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Perception</span>
+                    <span class="attr-lore">Awareness, observation, and sensory acuity.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Perception >= dotValue ? "filled" : "")" @onclick="() => character.Perception = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Intelligence</span>
+                    <span class="attr-lore">Memory, logic, and ability to learn facts.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Intelligence >= dotValue ? "filled" : "")" @onclick="() => character.Intelligence = dotValue"></span>
+                    }
+                </div>
+            </div>
+            
+            <div class="attr-row">
+                <div class="attr-info">
+                    <span class="attr-label">Wits</span>
+                    <span class="attr-lore">Quick thinking, reaction speed, and improvisation.</span>
+                </div>
+                <div class="dots">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int dotValue = i;
+                        <span class="dot @(character.Wits >= dotValue ? "filled" : "")" @onclick="() => character.Wits = dotValue"></span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private W20Character character => BuilderService.CurrentCharacter;
+}
+
+<style>
+    .character-panel { background: #0a0a0a; padding: 20px; border: 1px solid #444; }
+    .character-panel h2 { color: #ff3333; border-bottom: 2px dashed #8B0000; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
+
+    .instruction-box { background: #111; border-left: 4px solid #0098ff; padding: 10px 15px; margin-bottom: 20px; }
+    .instruction-box p { margin: 0; color: #d3d3d3; font-size: 0.95rem; }
+
+    .distribution-tracker { display: flex; justify-content: space-around; background: #050505; padding: 15px; border: 1px solid #333; margin-bottom: 25px; }
+    .tracker-box { color: #888; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;}
+    .tracker-box strong { color: #ff3333; font-size: 1.4rem; margin-left: 5px; }
+
+    .attribute-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; }
+    .attribute-column h3 { text-transform: uppercase; color: #8B0000; border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; letter-spacing: 2px; }
+
+    .attr-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 8px; border-bottom: 1px dashed #222; }
+    .attr-row:hover { background-color: #111; }
+
+    .attr-info { display: flex; flex-direction: column; }
+    .attr-label { font-weight: bold; color: #d3d3d3; font-size: 1.1rem; }
+    .attr-lore { color: #777; font-size: 0.75rem; font-style: italic; margin-top: 2px; }
+
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #444; cursor: pointer; background-color: #000; transition: all 0.1s; }
+    .dot:hover { border-color: #ff3333; }
+    .dot.filled { background-color: #ff3333; border-color: #8B0000; box-shadow: 0 0 6px rgba(255,51,51,0.6); }
+</style>

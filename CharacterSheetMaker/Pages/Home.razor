@@ -1,0 +1,162 @@
+﻿@page "/"
+@using W20Builder.Models
+@inject CharacterBuilderService BuilderService
+
+<PageTitle>W20 Builder - Identity</PageTitle>
+
+<div class="character-panel">
+    <h2>Garou Identity Protocol</h2>
+    
+    <div class="form-grid">
+        <div class="input-column">
+            <div class="input-group">
+                <label>Name:</label>
+                <input @bind="character.Name" placeholder="Enter Name..." />
+            </div>
+            <div class="input-group">
+                <label>Player:</label>
+                <input @bind="character.Player" placeholder="Enter Player..." />
+            </div>
+            <div class="input-group">
+                <label>Chronicle:</label>
+                <input @bind="character.Chronicle" placeholder="Enter Chronicle..." />
+            </div>
+            <div class="input-group">
+                <label>Concept:</label>
+                <input @bind="character.Concept" placeholder="e.g. Punk Rocker, Med Student..." />
+            </div>
+            
+            <div class="input-group">
+                <label>Breed:</label>
+                <select @bind="character.Breed">
+                    <option value="Homid">Homid (Human-born)</option>
+                    <option value="Metis">Metis (Garou-born)</option>
+                    <option value="Lupus">Lupus (Wolf-born)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Auspice (Moon Phase):</label>
+                <select @bind="character.Auspice">
+                    <option value="Ragabash">Ragabash (New Moon)</option>
+                    <option value="Theurge">Theurge (Crescent Moon)</option>
+                    <option value="Philodox">Philodox (Half Moon)</option>
+                    <option value="Galliard">Galliard (Gibbous Moon)</option>
+                    <option value="Ahroun">Ahroun (Full Moon)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Tribe:</label>
+                <select @bind="character.Tribe">
+                    <option value="Black Furies">Black Furies</option>
+                    <option value="Bone Gnawers">Bone Gnawers</option>
+                    <option value="Children of Gaia">Children of Gaia</option>
+                    <option value="Fianna">Fianna</option>
+                    <option value="Get of Fenris">Get of Fenris</option>
+                    <option value="Glass Walkers">Glass Walkers</option>
+                    <option value="Red Talons">Red Talons</option>
+                    <option value="Shadow Lords">Shadow Lords</option>
+                    <option value="Silent Striders">Silent Striders</option>
+                    <option value="Silver Fangs">Silver Fangs</option>
+                    <option value="Stargazers">Stargazers</option>
+                    <option value="Uktena">Uktena</option>
+                    <option value="Wendigo">Wendigo</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="lore-column scanline-bg">
+            <div class="lore-header">DATABASE QUERY...</div>
+            
+            <div class="lore-block">
+                <h4>[ BREED: @character.Breed.ToUpper() ]</h4>
+                <div class="mechanics-text">@((MarkupString)GetBreedLore(character.Breed))</div>
+            </div>
+
+            <div class="lore-block">
+                <h4>[ AUSPICE: @character.Auspice.ToUpper() ]</h4>
+                <div class="mechanics-text">@((MarkupString)GetAuspiceLore(character.Auspice))</div>
+            </div>
+
+            <div class="lore-block">
+                <h4>[ TRIBE: @character.Tribe.ToUpper() ]</h4>
+                <div class="mechanics-text">@((MarkupString)GetTribeLore(character.Tribe))</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private W20Character character => BuilderService.CurrentCharacter;
+
+    // --- W20 Lore & Mechanics Dictionaries ---
+    private string GetBreedLore(string breed) => breed switch
+    {
+        "Homid" => "Born human and raised by human parents. You were not aware of your heritage until your First Change.<br/><br/><strong>Initial Gnosis:</strong> 1<br/><strong>Beginning Gifts:</strong> Apecraft’s Blessings, City Running, Master of Fire, Persuasion, Smell of Man",
+        "Metis" => "The sterile, deformed offspring of two Garou breaking the Litany. Raised within the Sept, you know Garou culture intimately but face heavy stigma.<br/><br/><strong>Initial Gnosis:</strong> 3<br/><strong>Beginning Gifts:</strong> Create Element, Curse of Hatred, Primal Anger, Rat Head, Sense Wyrm",
+        "Lupus" => "Born to wolf parents. You rely on instinct and primal cunning, but struggle with abstract human concepts and tools.<br/><br/><strong>Initial Gnosis:</strong> 5<br/><strong>Beginning Gifts:</strong> Hare's Leap, Heightened Senses, Prey Mind, Predator's Arsenal, Sense Prey",
+        _ => ""
+    };
+
+    private string GetAuspiceLore(string auspice) => auspice switch
+    {
+        "Ragabash" => "The New Moon. The trickster, scout, and questioner of the ways. You have a duty to challenge tradition.<br/><br/><strong>Initial Rage:</strong> 1<br/><strong>Beginning Gifts:</strong> Blur of the Milky Eye, Open Seal, Scent of Running Water, Slipping the Shadow, Taking the Forgotten",
+        "Theurge" => "The Crescent Moon. The seer, shaman, and speaker to spirits. You walk the Umbra and bind Banes.<br/><br/><strong>Initial Rage:</strong> 2<br/><strong>Beginning Gifts:</strong> Mother's Touch, Sense Wyrm, Spirit Snare, Spirit Speech, Umbral Tether",
+        "Philodox" => "The Half Moon. The judge, mediator, and lawkeeper. You must balance the wolf and the man, maintaining the Litany.<br/><br/><strong>Initial Rage:</strong> 3<br/><strong>Beginning Gifts:</strong> Fangs of Judgment, Persuasion, Resist Pain, Scent of the True Form, Truth of Gaia",
+        "Galliard" => "The Gibbous Moon. The bard, historian, and Moon Dancer. You sing the tales of fallen heroes and inspire the pack.<br/><br/><strong>Initial Rage:</strong> 4<br/><strong>Beginning Gifts:</strong> Beast Speech, Call of the Wyld, Distractions, Mindspeak, Perfect Recall",
+        "Ahroun" => "The Full Moon. The warrior, protector, and master of battle. You are the vanguard against the Wyrm.<br/><br/><strong>Initial Rage:</strong> 5<br/><strong>Beginning Gifts:</strong> Falling Touch, Inspiration, Pack Tactics, Razor Claws, Spur Claws",
+        _ => ""
+    };
+
+    private string GetTribeLore(string tribe) => tribe switch
+    {
+        "Black Furies" => "Defenders of the wild places and fierce warriors for their fellow women.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> No restrictions.<br/><strong>Beginning Gifts:</strong> Breath of the Wyld, Man's Skin, Heightened Senses, Sense Wyrm, Wyld Resurgence",
+        "Bone Gnawers" => "Consummate spies, urban survivors, and scavengers. They live in poverty with a casual regard for tradition.<br/><br/><strong>Initial Willpower:</strong> 4<br/><strong>Backgrounds:</strong> Resources are discouraged; Ancestors and Pure Breed are restricted.<br/><strong>Beginning Gifts:</strong> Cooking, Desperate Strength, Resist Toxin, Scent of Sweet Honey",
+        "Children of Gaia" => "The most moderate tribe, they nurture what little the Wyrm has not corrupted and speak out on humanity's side.<br/><br/><strong>Initial Willpower:</strong> 4<br/><strong>Backgrounds:</strong> No restrictions.<br/><strong>Beginning Gifts:</strong> Brother’s Scent, Jam Weapon, Mercy, Mother's Touch, Resist Pain",
+        "Fianna" => "Originally of Celtic descent, the Fianna hold on to a lust for both celebration and battle.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> No restrictions, but Kinfolk is recommended.<br/><strong>Beginning Gifts:</strong> Faerie Light, Hare's Leap, Persuasion, Resist Toxin, Two Tongues",
+        "Get of Fenris" => "Savage, bloodthirsty warriors dedicated to the Wyrm’s destruction, taking great pride in their heritage.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Contacts are discouraged.<br/><strong>Beginning Gifts:</strong> Lightning Reflexes, Master of Fire, Razor Claws, Resist Pain, Visage of Fenris",
+        "Glass Walkers" => "Ultimate urban predators who take the war against the Wyrm into the boardroom and the skyscraper.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Ancestors & Pure Breed are restricted; Mentor is discouraged.<br/><strong>Beginning Gifts:</strong> Control Simple Machine, Diagnostics, Persuasion, Plug and Play, Trick Shot",
+        "Red Talons" => "Living in the deep wilderness, this tribe believes the only way to beat the Wyrm is to exterminate humanity.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Allies & Contacts discouraged; Resources restricted. Only wolves for Kinfolk.<br/><strong>Beginning Gifts:</strong> Beast Speech, Eye of the Hunter, Hidden Killer, Scent of Running Water, Wolf at the Door",
+        "Shadow Lords" => "Cunning, deceptive, and domineering. They have a burning drive to lead the whole Garou Nation.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Allies and Mentor are discouraged.<br/><strong>Beginning Gifts:</strong> Aura of Confidence, Fatal Flaw, Seizing the Edge, Shadow Weaving, Whisper Catching",
+        "Silent Striders" => "Exiled from their homeland, these wanderers learn the secrets of the physical or spiritual world on their journeys.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Ancestors is restricted; Resources is discouraged.<br/><strong>Beginning Gifts:</strong> Heaven's Guidance, Sense Wyrm, Silence, Speed of Thought, Visions of Duat",
+        "Silver Fangs" => "The hereditary rulers of the Garou Nation. Careful maintenance of royal blood has led to inbreeding and madness.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> Must purchase at least three dots of Pure Breed.<br/><strong>Beginning Gifts:</strong> Eye of the Falcon, Falcon's Grasp, Inspiration, Lambent Flame, Sense Wyrm",
+        "Stargazers" => "Ascetics who seek to master their own Rage, wandering the world to strike at the Wyrm.<br/><br/><strong>Initial Willpower:</strong> 4<br/><strong>Backgrounds:</strong> Allies, Fetish, and Resources are discouraged.<br/><strong>Beginning Gifts:</strong> Balance, Channeling, Falling Touch, Iron Resolve, Sense Wyrm",
+        "Uktena" => "Mysterious and mystical, charged with guarding the resting places of powerful Banes, though it taints them.<br/><br/><strong>Initial Willpower:</strong> 3<br/><strong>Backgrounds:</strong> No restrictions.<br/><strong>Beginning Gifts:</strong> Sense Magic, Sense Wyrm, Shroud, Spirit of the Lizard, Spirit Speech",
+        "Wendigo" => "The cold and insular Native American werewolves, guarding their caerns against even other Garou.<br/><br/><strong>Initial Willpower:</strong> 4<br/><strong>Backgrounds:</strong> Contacts and Resources are discouraged.<br/><strong>Beginning Gifts:</strong> Beat of the Heart-Drum, Call the Breeze, Camouflage, Ice Echo, Resist Pain",
+        _ => ""
+    };
+}
+
+<style>
+    .character-panel { background: #0a0a0a; padding: 20px; border: 1px solid #444; }
+    .character-panel h2 { color: #ff3333; border-bottom: 2px dashed #8B0000; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; margin-top: 20px; }
+    
+    .input-column { display: flex; flex-direction: column; gap: 15px; }
+    .input-group { display: flex; flex-direction: column; }
+    .input-group label { color: #888; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; }
+    
+    .input-group input, .input-group select {
+        background: #000; color: #00ff00; border: 1px solid #333; padding: 10px;
+        font-family: 'Courier New', Courier, monospace; font-size: 1rem;
+    }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: #ff3333; box-shadow: 0 0 5px rgba(255, 51, 51, 0.5); }
+
+    .lore-column {
+        background: #050505; border: 1px solid #333; padding: 20px;
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        color: #d3d3d3;
+    }
+    .scanline-bg {
+        background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 4px, 3px 100%;
+    }
+    
+    .lore-header { color: #888; font-size: 0.8rem; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+    
+    .lore-block { margin-bottom: 20px; }
+    .lore-block h4 { color: #0098ff; margin: 0 0 8px 0; font-family: monospace; font-size: 1.1rem; }
+    
+    .mechanics-text { font-size: 0.9rem; line-height: 1.5; color: #bbb; }
+    .mechanics-text strong { color: #ff3333; }
+</style>

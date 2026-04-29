@@ -1,0 +1,182 @@
+﻿@page "/abilities"
+@using W20Builder.Models
+@inject CharacterBuilderService BuilderService
+
+<PageTitle>W20 Builder - Abilities</PageTitle>
+
+<div class="character-panel">
+    <h2>Ability Allocation Protocol</h2>
+    
+    <div class="instruction-box">
+        <p>Distribute dots based on priority: <strong>13 (Primary)</strong>, <strong>9 (Secondary)</strong>, and <strong>5 (Tertiary)</strong>. <br/>
+        <em>Note: During character creation, dots are capped at 3 per ability.</em></p>
+    </div>
+
+    <div class="distribution-tracker">
+        <div class="tracker-box">Talents: <strong>@character.TalentDotsSpent</strong></div>
+        <div class="tracker-box">Skills: <strong>@character.SkillDotsSpent</strong></div>
+        <div class="tracker-box">Knowledges: <strong>@character.KnowledgeDotsSpent</strong></div>
+    </div>
+
+    <div class="ability-grid">
+        <div class="ability-column">
+            <h3>Talents</h3>
+            @foreach (var talent in character.Talents)
+            {
+                <div class="attr-row">
+                    <div class="tooltip-container">
+                        <span class="attr-label">@talent.Key</span>
+                        <span class="tooltip-text">@GetAbilityDescription(talent.Key)</span>
+                    </div>
+                    <div class="dots">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int dotValue = i;
+                            <span class="dot @(character.Talents[talent.Key] >= dotValue ? "filled" : "")" 
+                                  @onclick="() => SetAbility(character.Talents, talent.Key, dotValue)"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="ability-column">
+            <h3>Skills</h3>
+            @foreach (var skill in character.Skills)
+            {
+                <div class="attr-row">
+                    <div class="tooltip-container">
+                        <span class="attr-label">@skill.Key</span>
+                        <span class="tooltip-text">@GetAbilityDescription(skill.Key)</span>
+                    </div>
+                    <div class="dots">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int dotValue = i;
+                            <span class="dot @(character.Skills[skill.Key] >= dotValue ? "filled" : "")" 
+                                  @onclick="() => SetAbility(character.Skills, skill.Key, dotValue)"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="ability-column">
+            <h3>Knowledges</h3>
+            @foreach (var knowledge in character.Knowledges)
+            {
+                <div class="attr-row">
+                    <div class="tooltip-container">
+                        <span class="attr-label">@knowledge.Key</span>
+                        <span class="tooltip-text">@GetAbilityDescription(knowledge.Key)</span>
+                    </div>
+                    <div class="dots">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int dotValue = i;
+                            <span class="dot @(character.Knowledges[knowledge.Key] >= dotValue ? "filled" : "")" 
+                                  @onclick="() => SetAbility(character.Knowledges, knowledge.Key, dotValue)"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private W20Character character => BuilderService.CurrentCharacter;
+
+    private void SetAbility(Dictionary<string, int> dict, string key, int value)
+    {
+        if (dict[key] == value) dict[key] = 0;
+        else dict[key] = value;
+    }
+
+    private string GetAbilityDescription(string name) => name switch
+    {
+        // Talents
+        "Alertness" => "The ability to notice surroundings, spot hidden threats, and avoid ambushes.",
+        "Athletics" => "Running, jumping, climbing, and throwing. Vital for staying mobile in combat.",
+        "Brawl" => "Unarmed combat. Using claws, teeth, fists, and grappling maneuvers.",
+        "Empathy" => "Reading others' emotions and sensing their true intentions or hidden pain.",
+        "Expression" => "The art of communication—be it through writing, poetry, or speaking clearly.",
+        "Intimidation" => "Coercing others through physical threats, social dominance, or raw Rage.",
+        "Leadership" => "Inspiring others to follow your lead, especially under duress or in battle.",
+        "Primal-Urge" => "Instinctual connection to the wolf self. Used for shapeshifting and tracking.",
+        "Streetwise" => "Knowledge of urban life, black markets, and the pulse of the city's underbelly.",
+        "Subterfuge" => "The art of deception, lying, and concealing your own motivations.",
+
+        // Skills
+        "Animal Ken" => "Communicating with and training animals, and predicting their behavior.",
+        "Crafts" => "The ability to build, repair, and create physical objects or artwork.",
+        "Drive" => "Operating motor vehicles—from motorcycles to semi-trucks—often under pressure.",
+        "Etiquette" => "Understanding social protocols, especially within Garou Moots or High Society.",
+        "Firearms" => "Maintenance and use of guns, from pistols to heavy rifles.",
+        "Larceny" => "Picking locks, bypassing security systems, and sleight of hand.",
+        "Meditation" => "Centering the mind to regain Gnosis or resist the urge to Frenzy.",
+        "Melee" => "Combat using handheld weapons like knives, klaives, or clubs.",
+        "Performance" => "Singing, acting, playing instruments, or Howling for the Moons.",
+        "Stealth" => "Moving silently and remaining unseen, even in broad daylight.",
+
+        // Knowledges
+        "Academics" => "General knowledge of history, literature, and the liberal arts.",
+        "Computer" => "Hacking, programming, and operating complex digital systems.",
+        "Enigmas" => "Solving puzzles, riddles, and interpreting strange Umbral visions.",
+        "Investigation" => "Analyzing a scene to find clues and connecting disparate pieces of evidence.",
+        "Law" => "Knowledge of human laws or the ancient Litany that governs the Garou.",
+        "Medicine" => "Knowledge of biology, first aid, surgery, and diagnosing ailments.",
+        "Occult" => "Understanding the supernatural world—spirits, vampires, and rituals.",
+        "Rituals" => "Knowledge of Garou rites, from the Rite of Passage to the Rite of the Fetish.",
+        "Science" => "Hard sciences like chemistry, physics, and geology.",
+        "Technology" => "Understanding mechanical systems, electricity, and hardware repair.",
+        _ => "Data not found in archive."
+    };
+}
+
+<style>
+    .character-panel { background: #0a0a0a; padding: 20px; border: 1px solid #444; position: relative; }
+    .character-panel h2 { color: #ff3333; border-bottom: 2px dashed #8B0000; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
+
+    .instruction-box { background: #111; border-left: 4px solid #0098ff; padding: 10px 15px; margin-bottom: 20px; }
+    .instruction-box p { margin: 0; color: #d3d3d3; font-size: 0.95rem; line-height: 1.4; }
+
+    .distribution-tracker { display: flex; justify-content: space-around; background: #050505; padding: 15px; border: 1px solid #333; margin-bottom: 25px; }
+    .tracker-box { color: #888; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;}
+    .tracker-box strong { color: #ff3333; font-size: 1.4rem; margin-left: 5px; }
+
+    .ability-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .ability-column h3 { text-transform: uppercase; color: #8B0000; border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
+
+    .attr-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 6px; border-bottom: 1px solid #1a1a1a; }
+    .attr-row:hover { background-color: #111; border-color: #333; }
+    
+    .attr-label { color: #d3d3d3; font-size: 0.95rem; font-weight: bold; cursor: help; border-bottom: 1px dotted #555; }
+
+    /* Tooltip Logic */
+    .tooltip-container { position: relative; display: inline-block; }
+    .tooltip-text {
+        visibility: hidden;
+        width: 180px;
+        background-color: #8B0000;
+        color: #fff;
+        text-align: center;
+        border: 1px solid #ff3333;
+        padding: 8px;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 0;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.8rem;
+        font-weight: normal;
+        line-height: 1.2;
+        box-shadow: 0px 0px 10px rgba(0,0,0,1);
+    }
+    .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+    .dots { display: flex; gap: 4px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #555; cursor: pointer; background-color: #000; }
+    .dot.filled { background-color: #ff3333; border-color: #8B0000; box-shadow: 0 0 5px rgba(255,51,51,0.5); }
+</style>

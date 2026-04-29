@@ -1,0 +1,219 @@
+﻿@page "/freebies"
+@using W20Builder.Models
+@inject CharacterBuilderService BuilderService
+
+<PageTitle>W20 Builder - Freebie Points</PageTitle>
+
+<div class="character-panel">
+    <h2>Phase V: Freebie Points Allocation</h2>
+
+    <div class="freebie-header">
+        <div class="points-circle">
+            <span class="label">REMAINING</span>
+            <span class="value">@(15 - TotalCost)</span>
+        </div>
+        <div class="cost-legend">
+            <span>Attr: 5</span> | <span>Abil: 2</span> | <span>BG: 1</span> | <span>Gift: 7</span> | <span>WP/Rage: 1</span> | <span>Gnosis: 2</span>
+        </div>
+    </div>
+
+    @if (TotalCost > 15)
+    {
+        <div class="warning-banner">CRITICAL ERROR: POINT OVERFLOW. REDUCE ALLOCATION.</div>
+    }
+
+    <div class="freebie-grid">
+        <div class="freebie-section">
+            <h3>Pool Enhancements</h3>
+            <div class="boost-row">
+                <div class="pool-label">Rage <span class="pool-val">[@character.TotalRage/10]</span></div>
+                <div class="controls">
+                    <button @onclick="() => character.ExtraRage = Math.Max(0, character.ExtraRage - 1)">-</button>
+                    <button class="@(character.TotalRage >= 10 ? "disabled" : "")" 
+                            @onclick="() => { if(character.TotalRage < 10) character.ExtraRage++; }">+</button>
+                </div>
+            </div>
+            <div class="boost-row">
+                <div class="pool-label">Gnosis <span class="pool-val">[@character.TotalGnosis/10]</span></div>
+                <div class="controls">
+                    <button @onclick="() => character.ExtraGnosis = Math.Max(0, character.ExtraGnosis - 1)">-</button>
+                    <button class="@(character.TotalGnosis >= 10 ? "disabled" : "")" 
+                            @onclick="() => { if(character.TotalGnosis < 10) character.ExtraGnosis++; }">+</button>
+                </div>
+            </div>
+            <div class="boost-row">
+                <div class="pool-label">Willpower <span class="pool-val">[@character.TotalWillpower/10]</span></div>
+                <div class="controls">
+                    <button @onclick="() => character.ExtraWillpower = Math.Max(0, character.ExtraWillpower - 1)">-</button>
+                    <button class="@(character.TotalWillpower >= 10 ? "disabled" : "")" 
+                            @onclick="() => { if(character.TotalWillpower < 10) character.ExtraWillpower++; }">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="freebie-section">
+            <h3>Automated Dot Audit</h3>
+            <p class="instruction">Points consumed by extra dots in previous categories:</p>
+            <ul class="cost-list">
+                <li>Attributes: @ExtraAttrDots x 5 = <span class="cost-val">@(ExtraAttrDots * 5)</span></li>
+                <li>Abilities: @ExtraAbilDots x 2 = <span class="cost-val">@(ExtraAbilDots * 2)</span></li>
+                <li>Backgrounds: @ExtraBGDots x 1 = <span class="cost-val">@(ExtraBGDots * 1)</span></li>
+            </ul>
+        </div>
+
+        <div class="freebie-section">
+            <h3>Acquire Additional Gifts (7pts)</h3>
+            <div class="gift-shop">
+                <select @bind="selectedShopGift">
+                    <option value="">-- View Level 1 Archive --</option>
+                    @foreach (var gift in AllLevel1Gifts.Keys.OrderBy(k => k))
+                    {
+                        <option value="@gift">@gift</option>
+                    }
+                </select>
+                <button class="btn-purchase" @onclick="PurchaseGift" disabled="@(string.IsNullOrEmpty(selectedShopGift))">PURCHASE</button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(selectedShopGift))
+            {
+                <div class="shop-preview">
+                    <span class="preview-title">> SYSTEM ANALYSIS:</span>
+                    <p>@((MarkupString)AllLevel1Gifts[selectedShopGift])</p>
+                </div>
+            }
+
+            <div class="purchased-list-container">
+                <span class="lore-header">ACQUIRED GIFTS:</span>
+                <ul class="purchased-list">
+                    @foreach (var gift in character.FreebieGifts)
+                    {
+                        <li>
+                            @gift <button class="btn-del" @onclick="() => character.FreebieGifts.Remove(gift)">[DELETE]</button>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private W20Character character => BuilderService.CurrentCharacter;
+    private string selectedShopGift = "";
+
+    private int ExtraAttrDots => (character.PhysicalDotsSpent > 7 ? character.PhysicalDotsSpent - 7 : 0) +
+                                 (character.SocialDotsSpent > 5 ? character.SocialDotsSpent - 5 : 0) +
+                                 (character.MentalDotsSpent > 3 ? character.MentalDotsSpent - 3 : 0);
+
+    private int ExtraAbilDots => (character.TalentDotsSpent > 13 ? character.TalentDotsSpent - 13 : 0) +
+                                 (character.SkillDotsSpent > 9 ? character.SkillDotsSpent - 9 : 0) +
+                                 (character.KnowledgeDotsSpent > 5 ? character.KnowledgeDotsSpent - 5 : 0);
+
+    private int ExtraBGDots => (character.BackgroundDotsSpent > 5 ? character.BackgroundDotsSpent - 5 : 0);
+
+    private int TotalCost => (ExtraAttrDots * 5) + (ExtraAbilDots * 2) + (ExtraBGDots * 1) + 
+                             (character.FreebieGifts.Count * 7) + 
+                             (character.ExtraWillpower * 1) + (character.ExtraRage * 1) + (character.ExtraGnosis * 2);
+
+    private void PurchaseGift()
+    {
+        if (!string.IsNullOrEmpty(selectedShopGift) && !character.FreebieGifts.Contains(selectedShopGift))
+        {
+            character.FreebieGifts.Add(selectedShopGift);
+            selectedShopGift = "";
+        }
+    }
+
+    private Dictionary<string, string> AllLevel1Gifts = new()
+    {
+        { "Apecraft’s Blessings", "<strong>System:</strong> Use tools/machines without needing to roll Dexterity or Skill." },
+        { "City Running", "<strong>System:</strong> Double movement speed on rooftops/pavement. -2 Difficulty to urban traversal." },
+        { "Master of Fire", "<strong>System:</strong> Spend 1 Willpower. Fire does Bashing damage for the scene." },
+        { "Persuasion", "<strong>System:</strong> All Social rolls gain an automatic success." },
+        { "Smell of Man", "<strong>System:</strong> +2 dice to all Tracking rolls for humans. Domestic animals flee." },
+        { "Create Element", "<strong>System:</strong> Spend 1 Gnosis to create fire, air, earth, or water within 10ft." },
+        { "Curse of Hatred", "<strong>System:</strong> Roll Manipulation + Expression vs Willpower to drain victim's Willpower." },
+        { "Primal Anger", "<strong>System:</strong> Spend 1 Rage to instantly regain all Rage or force a shapeshift." },
+        { "Rat Head", "<strong>System:</strong> Spend 1 Gnosis to squeeze through any opening wider than your nose." },
+        { "Hare's Leap", "<strong>System:</strong> Roll Strength + Athletics to double your jump distance per success." },
+        { "Heightened Senses", "<strong>System:</strong> Spend 1 Gnosis for -2 Difficulty to all Perception rolls." },
+        { "Prey Mind", "<strong>System:</strong> Roll Perception + Primal-Urge to predict a target's flight path." },
+        { "Blur of the Milky Eye", "<strong>System:</strong> Roll Wits + Stealth. Successes add to the Difficulty for others to see you." },
+        { "Open Seal", "<strong>System:</strong> Roll Gnosis to instantly unlock any physical or electronic lock." },
+        { "Scent of Running Water", "<strong>System:</strong> All scent-based Tracking rolls against you are +4 Difficulty." },
+        { "Mother's Touch", "<strong>System:</strong> Spend 1 Gnosis and roll Int + Med to heal Lethal/Bashing wounds." },
+        { "Spirit Snare", "<strong>System:</strong> Roll Wits + Occult vs Spirit Gnosis to entangle and slow a spirit." },
+        { "Spirit Speech", "<strong>System:</strong> Passive. You can hear and speak to spirits across the Gauntlet." },
+        { "Fangs of Judgment", "<strong>System:</strong> Spend 1 Willpower. Bite/Claw attacks do +2 damage against Litany-breakers." },
+        { "Truth of Gaia", "<strong>System:</strong> Roll Perception + Empathy vs Man + Subterfuge to detect lies." },
+        { "Beast Speech", "<strong>System:</strong> Roll Charisma + Animal Ken to communicate with/command animals." },
+        { "Call of the Wyld", "<strong>System:</strong> Roll Stamina + Performance. Allies gain +1 die to combat pools." },
+        { "Falling Touch", "<strong>System:</strong> Roll Dex + Brawl to knock a target prone and stun them." },
+        { "Inspiration", "<strong>System:</strong> Spend 1 Gnosis. Allies within earshot gain 1 automatic success on their next roll." },
+        { "Razor Claws", "<strong>System:</strong> Spend 1 Rage. Claw attacks do +1 damage (Aggravated) for the scene." },
+        { "Breath of the Wyld", "<strong>System:</strong> Roll Gnosis. Allies gain +1 to all dice pools for one turn per success." },
+        { "Cooking", "<strong>System:</strong> Spend 1 Gnosis to transform trash into a nutritious, non-toxic meal." },
+        { "Faerie Light", "<strong>System:</strong> Roll Wits + Expression to create a moving, guiding, or blinding light." },
+        { "Lightning Reflexes", "<strong>System:</strong> Spend 1 Willpower for +2 Initiative and an extra movement action." },
+        { "Control Simple Machine", "<strong>System:</strong> Roll Manipulation + Technology to command mechanical objects." },
+        { "Aura of Confidence", "<strong>System:</strong> Passive. Immune to Intimidation and fear-based powers." },
+        { "Sense Magic", "<strong>System:</strong> Roll Perception + Enigmas to detect magic within 50 feet." },
+        { "Call the Breeze", "<strong>System:</strong> Spend 1 Willpower. Wind knocks down targets with low Strength." },
+        { "Slipping the Shadow", "<strong>System:</strong> Roll Dexterity + Stealth to move through shadows undetected." },
+        { "Mindspeak", "<strong>System:</strong> Create a mental link between packmates over long distances." },
+        { "Resist Pain", "<strong>System:</strong> Ignore wound penalties for the duration of the scene." }
+    };
+}
+
+<style>
+    .character-panel { background: #0a0a0a; padding: 20px; border: 1px solid #444; }
+    .character-panel h2 { color: #ff3333; border-bottom: 2px dashed #8B0000; padding-bottom: 10px; text-transform: uppercase; }
+
+    .freebie-header { display: flex; align-items: center; justify-content: space-between; background: #111; padding: 20px; border: 1px solid #333; margin-bottom: 30px; }
+    
+    .points-circle { 
+        width: 100px; height: 100px; border: 4px solid #ff3333; border-radius: 50%; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        box-shadow: 0 0 15px rgba(255,51,51,0.4);
+    }
+    .points-circle .label { font-size: 0.6rem; color: #888; }
+    .points-circle .value { font-size: 2rem; font-weight: bold; color: #fff; }
+
+    .cost-legend { color: #aaa; font-family: monospace; font-size: 0.9rem; }
+    
+    .warning-banner { background: #8B0000; color: #fff; padding: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: blink 1s infinite; }
+    @@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    .freebie-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 20px; }
+    .freebie-section { background: #050505; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; }
+    .freebie-section h3 { color: #0098ff; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 0; }
+
+    .boost-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 5px 0; border-bottom: 1px solid #1a1a1a; }
+    .pool-label { color: #d3d3d3; font-size: 0.95rem; font-family: monospace; }
+    .pool-val { color: #ff3333; font-weight: bold; margin-left: 10px; }
+
+    .controls { display: flex; gap: 5px; }
+    .controls button { background: #222; color: #00ff00; border: 1px solid #444; width: 32px; height: 32px; cursor: pointer; font-weight: bold; }
+    .controls button:hover { background: #333; border-color: #ff3333; }
+    .controls button.disabled { opacity: 0.2; cursor: not-allowed; border-color: #111; }
+
+    .cost-list { list-style: none; padding: 0; color: #bbb; font-size: 0.85rem; }
+    .cost-list li { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dotted #333; padding-bottom: 2px; }
+    .cost-val { color: #ff3333; font-weight: bold; }
+
+    .gift-shop { display: flex; gap: 5px; margin-bottom: 15px; }
+    .gift-shop select { background: #000; color: #00ff00; border: 1px solid #333; padding: 8px; flex-grow: 1; font-family: monospace; }
+    .btn-purchase { background: #8B0000; color: #fff; border: none; padding: 5px 12px; cursor: pointer; font-weight: bold; }
+    .btn-purchase:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .shop-preview { background: #111; padding: 10px; border-left: 3px solid #0098ff; margin-bottom: 15px; font-size: 0.85rem; }
+    .preview-title { color: #888; font-family: monospace; display: block; margin-bottom: 4px; }
+    .shop-preview p { margin: 0; color: #d3d3d3; line-height: 1.4; }
+    .shop-preview strong { color: #ff3333; }
+
+    .purchased-list-container { flex-grow: 1; background: #000; border: 1px solid #1a1a1a; padding: 10px; }
+    .lore-header { color: #888; font-size: 0.7rem; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+    .purchased-list { list-style: none; padding: 0; margin: 0; }
+    .purchased-list li { color: #00ff00; font-family: 'Courier New'; font-size: 0.9rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .btn-del { color: #ff3333; background: transparent; border: none; cursor: pointer; font-size: 0.7rem; }
+</style>
